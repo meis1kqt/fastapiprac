@@ -40,6 +40,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/tasks", handlers.GetAllTasks)
+	mux.HandleFunc("/tasks/", handlers.GetById)
 
 	http.ListenAndServe(":8080", mux)
 

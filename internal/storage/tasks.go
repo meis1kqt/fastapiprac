@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	_ "github.com/lib/pq"
 	"fmt"
 	"time"
 
@@ -25,7 +26,7 @@ func (t *TaskStore) GetAll() ([]models.Task, error) {
 
 	var tasks []models.Task
 
-	err := t.db.Select(&tasks, "SELECT * FROM tasks Order by created_at DESC")
+	err := t.db.Select(&tasks, "SELECT * FROM tasks")
 
 	if err != nil {
 		return nil, err
@@ -39,7 +40,7 @@ func (t *TaskStore) GetAll() ([]models.Task, error) {
 func (t *TaskStore) GetById(id int) (*models.Task, error) {
 	var task models.Task
 
-	err := t.db.Get(&task, "SELECT * FROM tasks WHERE id = $1")
+	err := t.db.Get(&task, "SELECT * FROM tasks WHERE id = $1", id)
 
 	if err == sql.ErrNoRows {
 		return nil , nil
@@ -52,7 +53,7 @@ func (t *TaskStore) GetById(id int) (*models.Task, error) {
 	return &task, nil
 }
 
-func (t *TaskStore) CreateTask(input models.CreateTaskInput) error {
+func (t *TaskStore) Create(input models.CreateTaskInput) error {
 
 
 
@@ -68,7 +69,7 @@ func (t *TaskStore) CreateTask(input models.CreateTaskInput) error {
 	return nil
 }
 
-func (t *TaskStore) DeletTask(id int) error {
+func (t *TaskStore) Delete(id int) error {
 
 	query := `DELETE from tasks where id = $1`
 

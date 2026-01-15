@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/meis1kqt/fastapiprac/internal/storage"
 )
@@ -18,7 +21,7 @@ func NewHandlers(store *storage.TaskStore) *Handlers {
 }
 
 func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
-	w.Header().Set("Content-Type", "applicatiin/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(payload)
 }
@@ -29,23 +32,48 @@ func respondWithError(w http.ResponseWriter, status int, message string) {
 
 
 func (h *Handlers) GetAllTasks(w http.ResponseWriter, r *http.Request) {
+
 	tasks , err := h.store.GetAll()
+
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve tasks")
+		respondWithError(w, 500, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, tasks)
-}	
+	respondWithJSON(w, 200, tasks)
 
-func (h *Handlers) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 
-	task , err := h.store.GetById()
 
-	if err != nil {
-		log.Fatalf("failed")
-	}
-
-	respondWithJSON(w, http.StatusOK, task)
 }
 
+
+func (h *Handlers) GetById(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		respondWithError(w, 405, "metod not allow")
+		return
+	}
+
+	path := strings.TrimPrefix(r.URL.Path, "/tasks/")
+
+
+	id, err := strconv.Atoi(path)
+
+	if err != nil {
+		respondWithError(w, 400, "invalid id")
+	}
+
+	task , err := h.store.GetById(id)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, 404, "task not found")
+			return
+		}
+		respondWithError(w, 500, err.Error())
+		return
+	}
+
+
+	respondWithJSON(w, 200, task)
+
+}
