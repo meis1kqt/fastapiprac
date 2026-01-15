@@ -14,7 +14,7 @@ func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 
 	if databaseURL == "" {
-		databaseURL = "postgres://taskuser:taskpass@localhost:5432/tasksdb?sslmode=disable"
+		databaseURL = "postgres://taskuser:taskpass@localhost:5432/taskdb?sslmode=disable"
 	}
 
 	serverPort := os.Getenv("SERVER_PORT")
@@ -40,9 +40,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/tasks", handlers.GetAllTasks)
-	mux.HandleFunc("/tasks/", handlers.GetTaskByID)
-	mux.HandleFunc("/delete")
 
-
+	http.ListenAndServe(":8080", mux)
 
 }
